@@ -1,0 +1,44 @@
+RECAPITULATIF DES TESTS - APPLICATION TODO
+
+1. Tests React avec Vitest
+Ils verifient deux actions dans l'interface : creer un projet et une tache, puis modifier une tache.
+Ils tournent dans un navigateur simule (jsdom). Ils ne verifient pas la vraie base IndexedDB de Chrome.
+
+Lancer une seule fois puis revenir au terminal :
+	npm run test:run
+
+Lancer en mode surveillance : les tests se relancent quand les fichiers changent.
+	npm run test
+Arreter ce mode avec Ctrl+C.
+
+2. Test navigateur avec k6 et Chrome
+Ce test ouvre jusqu'a trois navigateurs virtuels. Chaque navigateur utilise sa propre base IndexedDB.
+Le test cree un projet et une tache, verifie les donnees dans IndexedDB, recharge la page,
+modifie et termine la tache, puis la supprime.
+
+Prerequis : k6 et Google Chrome doivent etre installes.
+
+Ordre de lancement :
+	Terminal 1 : npm run dev
+	Terminal 2 : npm run test:browser:load
+
+Garder le premier terminal ouvert pendant le test. Le test utilise par defaut
+http://localhost:5173. Si l'application utilise une autre adresse, definir BASE_URL avant le test.
+
+3. Verification du build
+Verifie que Vite peut compiler l'application pour la production :
+	npm run build
+
+4. Lint (verification de style/code, facultative)
+	npm run lint
+Un avertissement actuel concerne un setState appele depuis un effet dans src/App.jsx.
+
+5. Tests automatiques sur GitHub
+Le workflow GitHub Actions lance les tests Vitest, le build et le test k6 apres un push
+ou une pull request. Pour l'executer, il faut committer les changements puis les pousser
+vers le depot GitHub.
+
+Derniers resultats locaux observes :
+- Vitest : 2 tests reussis.
+- Build : reussi.
+- k6/Chrome : 10 parcours termines et 80 verifications reussies, jusqu'a 3 navigateurs.

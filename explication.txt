@@ -1,0 +1,86 @@
+COMPRENDRE LE RESULTAT DU TEST K6
+
+Qu'est-ce qu'un parcours ?
+Un parcours est un tour complet du scenario effectue par un navigateur virtuel.
+Pendant ce tour, le navigateur cree une tache, verifie son enregistrement,
+recharge la page, modifie la tache, la marque comme terminee, puis la supprime.
+
+Les 8 verifications effectuees pendant un parcours sont :
+1. La tache ajoutee apparait a l'ecran.
+2. Le projet est enregistre dans la base du navigateur.
+3. La tache est enregistree dans IndexedDB.
+4. La tache apparait toujours apres le rechargement de la page.
+5. La modification de la tache apparait a l'ecran.
+6. La tache modifiee est toujours presente apres le rechargement.
+7. Le nouveau titre et le statut "terminee" sont conserves dans IndexedDB.
+8. Apres suppression, la tache n'est plus dans IndexedDB.
+
+Pourquoi 80 verifications ?
+Le test a termine 10 parcours. Chaque parcours contient 8 verifications :
+10 parcours x 8 verifications = 80 verifications.
+Le resultat indique que les 80 ont reussi et qu'aucune n'a echoue.
+
+Parcours et navigateurs virtuels : quelle difference ?
+Le test a utilise jusqu'a 3 navigateurs virtuels en meme temps.
+Cela ne veut pas dire qu'il y avait 10 navigateurs. Les 3 navigateurs ont
+effectue 10 parcours au total, en repetant le scenario.
+Chaque navigateur a son propre contexte et sa propre base IndexedDB.
+
+Dans la sortie k6 :
+- checks_total = nombre total de verifications (80).
+- checks_succeeded = nombre de verifications reussies (80).
+- checks_failed = nombre de verifications echouees (0).
+- iterations = nombre de parcours termines (10).
+- vus_max = nombre maximal de navigateurs virtuels utilises simultanement (3).
+
+
+DEROULEMENT DU WORKFLOW GITHUB ACTIONS
+
+Quand le workflow se declenche ?
+Le fichier .github/workflows/test-on-push.yml configure un declenchement :
+- apres un push vers une branche GitHub ;
+- apres la creation ou la mise a jour d'une pull request.
+
+Un commit fait seulement sur l'ordinateur ne declenche rien. Il faut ensuite
+pousser le commit vers GitHub avec Push ou Synchroniser les modifications.
+
+Job 1 : tests React et compilation
+1. GitHub cree une machine virtuelle Ubuntu.
+2. Il recupere le code envoye sur GitHub.
+3. Il installe Node.js 20.
+4. Il installe les dependances du projet avec npm ci, selon package-lock.json.
+5. Il execute npm run test:run pour lancer les tests Vitest.
+6. Il execute npm run build pour verifier que l'application se compile.
+
+Job 2 : test navigateur k6/Chromium
+Ce job commence seulement si le Job 1 a reussi (needs: test).
+1. GitHub cree une autre machine Ubuntu et recupere le meme code.
+2. Il installe Node.js, k6 et le navigateur Chrome/Chromium necessaire au test.
+3. Il installe les dependances du projet avec npm ci.
+4. Il demarre Vite en arriere-plan et attend que l'application reponde.
+5. Il lance npm run test:browser:load en mode sans interface graphique.
+6. k6 ouvre jusqu'a trois navigateurs virtuels et effectue le scenario decrit
+	 dans la section precedente, avec une base IndexedDB propre a chaque navigateur.
+
+Comment lire le resultat sur GitHub ?
+- Une coche verte signifie que les deux jobs ont reussi.
+- Si le Job 1 echoue, le Job 2 ne demarre pas.
+- Une croix rouge indique qu'une etape a echoue. Ouvrir le job puis l'etape
+	rouge permet de lire la commande et le message d'erreur.
+- Le test ne publie pas l'application sur Internet : il la lance temporairement
+	sur la machine de test de GitHub.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
