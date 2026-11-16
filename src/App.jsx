@@ -174,7 +174,7 @@ function App() {
       <header className="topbar">
         <div>
           <p className="eyebrow">TP React</p>
-          <h1>ToDo par projets</h1>
+          {/* <h1>ToDo par projets</h1> */}
         </div>
       </header>
 
